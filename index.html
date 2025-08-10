@@ -1,13 +1,86 @@
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Website Spi703</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Slot Game Keren 🎰</title>
+  <style>
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #ffcc00;
+    }
+    #slot {
+      font-size: 5em;
+      margin: 40px 0;
+      letter-spacing: 20px;
+      transition: all 0.5s ease;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 12px 24px;
+      border: none;
+      background: #ffcc00;
+      color: #222;
+      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 0 5px #c9a900;
+      transition: all 0.3s ease;
+    }
+    button:active {
+      box-shadow: 0 2px #c9a900;
+      transform: translateY(3px);
+    }
+  </style>
 </head>
 <body>
-  <h1>Selamat datang di spi703.github.io!</h1>
-  <p>Ini contoh website sederhana pakai GitHub Pages.</p>
+  <h1>Slot Game 🎰</h1>
+  <div id="slot">🍒 🍋 🍊</div>
+  <button id="spinBtn">Spin!</button>
+
+  <audio id="spinSound" src="https://www.soundjay.com/misc/sounds/casino-slot-spin-01.mp3"></audio>
+  
+  <script>
+    const emojis = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '7️⃣'];
+    const slotEl = document.getElementById('slot');
+    const spinBtn = document.getElementById('spinBtn');
+    const spinSound = document.getElementById('spinSound');
+
+    function randomEmojis(){
+      return Array(3).fill(0).map(() => emojis[Math.floor(Math.random() * emojis.length)]).join(' ');
+    }
+
+    function spin(){
+      spinBtn.disabled = true;
+      spinSound.currentTime = 0;
+      spinSound.play();
+      let count = 0;
+      let interval = setInterval(() => {
+        slotEl.textContent = randomEmojis();
+        count++;
+        if(count > 15){
+          clearInterval(interval);
+          spinBtn.disabled = false;
+          checkWin();
+        }
+      }, 100);
+    }
+
+    function checkWin(){
+      const results = slotEl.textContent.split(' ');
+      if(results === results && results === results){
+        alert('WAH! Kamu MENANG! 🎉');
+      }
+    }
+
+    spinBtn.addEventListener('click', spin);
+  </script>
 </body>
 </html>
 ```
