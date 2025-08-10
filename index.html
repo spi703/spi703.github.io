@@ -83,3 +83,26 @@
     }).then(res => res.text()).then(msg => alert(msg)).catch(() => alert('Gagal koneksi ke server'));
   });
 </script>
+<!-- Footer Navigasi Bawah -->
+<div style="position:fixed; bottom:0; left:0; right:0; background:#111; display:flex; justify-content:space-around; align-items:center; padding:8px 0; font-family:sans-serif; color:#fff; font-size:14px; z-index:1000;">
+  <div style="text-align:center; cursor:pointer;">
+    <div style="font-size:20px;">🏠</div>
+    <div>Beranda</div>
+  </div>
+  <div style="text-align:center; cursor:pointer;">
+    <div style="font-size:20px;">📢</div>
+    <div>Promosi</div>
+  </div>
+  <div style="text-align:center; cursor:pointer;">
+    <div style="font-size:20px;">🏆</div>
+    <div>Event</div>
+  </div>
+  <div style="text-align:center; cursor:pointer;" onclick="window.open('https://wa.me/6281213667251', '_blank')">
+    <div style="font-size:20px; color:#25D366;">💬</div>
+    <div>WhatsApp</div>
+  </div>
+  <div style="text-align:center; cursor:pointer;" onclick="alert('Fitur live chat sedang dalam pengembangan!')">
+    <div style="font-size:20px;">🗨️</div>
+    <div>LiveChat</div>
+  </div>
+</div>
