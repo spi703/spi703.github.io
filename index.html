@@ -1,84 +1,84 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Slot Game Keren 🎰</title>
+  <title>SPI703 Clone</title>
   <style>
-    body {
-      background: #121212;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      padding: 30px;
+    body { font-family: Arial, sans-serif; margin:0; background: #121212; color: #fff; }
+    header { background: #1a1a1a; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+    header.logo { font-size: 1.8em; font-weight: bold; color: #ffcc00; }
+    nav a { color: #fff; margin: 0 15px; text-decoration: none; font-weight: bold; }
+    nav a:hover { color: #ffcc00; }.banner { background: url('https://i.imgur.com/4ZH1DjJ.jpg') center/cover no-repeat; height: 300px; display: flex; justify-content: center; align-items: center; text-align: center; }.banner h1 { background: rgba(0,0,0,0.5); padding: 20px; font-size: 2.5em; color: #ffcc00; border-radius: 10px; }.menu { display: flex; justify-content: center; margin: 20px 0; }.menu button { background: #222; border: none; color: #fff; padding: 15px 25px; margin: 0 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s; }.menu button:hover { background: #ffcc00; color:#222; }.info { max-width: 800px; margin: 0 auto 40px; background: #1e1e1e; padding: 20px; border-radius: 10px; line-height: 1.5; }
+    form.login { max-width: 400px; margin: 0 auto; background: #1a1a1a; padding: 20px; border-radius: 10px; }
+    form.login input[type="text"], form.login input[type="password"] {
+      width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 6px;
     }
-    h1 {
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px #ffcc00;
-    }
-    #slot {
-      font-size: 5em;
-      margin: 40px 0;
-      letter-spacing: 20px;
-      transition: all 0.5s ease;
-    }
-    button {
-      font-size: 1.5em;
-      padding: 12px 24px;
-      border: none;
-      background: #ffcc00;
-      color: #222;
-      cursor: pointer;
-      border-radius: 10px;
-      box-shadow: 0 5px #c9a900;
-      transition: all 0.3s ease;
-    }
-    button:active {
-      box-shadow: 0 2px #c9a900;
-      transform: translateY(3px);
+    form.login button {
+      width: 100%; padding: 12px; background: #ffcc00; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+    }.footer { background: #111; text-align: center; padding: 15px; margin-top: 40px; font-size: 0.9em; }.live-chat {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #ffcc00; color: #222; padding: 15px 20px; border-radius: 30px;
+      font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-  <h1>Slot Game 🎰</h1>
-  <div id="slot">🍒 🍋 🍊</div>
-  <button id="spinBtn">Spin!</button>
 
-  <audio id="spinSound" src="https://www.soundjay.com/misc/sounds/casino-slot-spin-01.mp3"></audio>
-  
-  <script>
-    const emojis = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '7️⃣'];
-    const slotEl = document.getElementById('slot');
-    const spinBtn = document.getElementById('spinBtn');
-    const spinSound = document.getElementById('spinSound');
+<header>
+  <div class="logo">SPI703</div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Togel</a>
+    <a href="#">Slot</a>
+    <a href="#">Live Casino</a>
+    <a href="#">Promo</a>
+    <a href="#">Daftar</a>
+  </nav>
+</header>
 
-    function randomEmojis(){
-      return Array(3).fill(0).map(() => emojis[Math.floor(Math.random() * emojis.length)]).join(' ');
+<div class="banner">
+  <h1>Promo Spesial Bonus 100% Untuk Member Baru!</h1>
+</div>
+
+<div class="menu">
+  <button>Togel</button>
+  <button>Slot</button>
+  <button>Live Casino</button>
+  <button>Sportsbook</button>
+</div>
+
+<div class="info">
+  <h2>Info Penting</h2>
+  <p>Deposit minimal Rp 10.000, proses cepat dan mudah. Withdrawal tanpa potongan dan support 24/7.</p>
+</div>
+
+<form class="login" onsubmit="return validateLogin()">
+  <h2>Login Member</h2>
+  <input type="text" id="username" placeholder="Username" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <button type="submit">Login</button>
+</form>
+
+<div class="live-chat" onclick="alert('Live chat belum tersedia, hubungi WhatsApp kami!')">
+  💬 Live Chat
+</div>
+
+<div class="footer">© 2025 SPI703 - All Rights Reserved</div>
+
+<script>
+  function validateLogin() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    if(user === '' || pass === '') {
+      alert('Username dan password harus diisi!');
+      return false;
     }
+    alert('Login sementara disabled, coba lagi nanti ya!');
+    return false;
+  }
+</script>
 
-    function spin(){
-      spinBtn.disabled = true;
-      spinSound.currentTime = 0;
-      spinSound.play();
-      let count = 0;
-      let interval = setInterval(() => {
-        slotEl.textContent = randomEmojis();
-        count++;
-        if(count > 15){
-          clearInterval(interval);
-          spinBtn.disabled = false;
-          checkWin();
-        }
-      }, 100);
-    }
-
-    function checkWin(){
-      const results = slotEl.textContent.split(' ');
-      if(results === results && results === results){
-        alert('WAH! Kamu MENANG! 🎉');
-      }
-    }
-
-    spinBtn.addEventListener('click', spin);
-  </script>
 </body>
 </html>
+```
