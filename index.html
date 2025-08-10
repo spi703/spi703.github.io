@@ -1,17 +1,60 @@
-<form id="registerForm" style="max-width:400px; margin:auto; background:#1a1a1a; padding:20px; border-radius:10px; color:#fff; font-family:sans-serif;">
-  <h2 style="text-align:center; color:#ffcc00;">Daftar Sekarang</h2>
-  <input type="text" id="username" placeholder="Username" required style="width:100%; padding:12px; margin:10px 0; border-radius:6px; border:none;" />
-  <input type="password" id="password" placeholder="Password" required style="width:100%; padding:12px; margin:10px 0; border-radius:6px; border:none;" />
-  <input type="password" id="confirmPassword" placeholder="Konfirmasi Password" required style="width:100%; padding:12px; margin:10px 0; border-radius:6px; border:none;" />
+<form id="registerForm" style="max-width:400px; margin: 30px auto; background:#121212; padding: 20px; border-radius: 10px; font-family: Arial, sans-serif; color:#fff;">
+  <h2 style="text-align:center; color:#ffcc00; margin-bottom: 20px;">Daftar Sekarang</h2>
 
-  <div style="margin:10px 0; font-size: 1.5em; letter-spacing:10px; text-align:center; user-select:none;" id="captcha">S F</div>
-  <input type="text" id="captchaInput" placeholder="Verifikasi" required style="width:100%; padding:12px; border-radius:6px; border:none;" />
+  <label style="display:block; margin-bottom:8px;">
+    👤 Username
+    <input type="text" id="username" placeholder="Username" required 
+      style="width:100%; padding:10px 12px; margin-top:6px; border-radius:6px; border:none; background:#222; color:#fff;" />
+  </label>
 
-  <button type="submit" style="width:100%; padding:12px; background:#ff5045; border:none; border-radius:6px; font-weight:bold; margin-top:15px; cursor:pointer;">Daftar</button>
+  <label style="display:block; margin-bottom:8px;">
+    🔒 Password
+    <input type="password" id="password" placeholder="Password" required 
+      style="width:100%; padding:10px 12px; margin-top:6px; border-radius:6px; border:none; background:#222; color:#fff;" />
+  </label>
+
+  <label style="display:block; margin-bottom:8px;">
+    🔒 Konfirmasi Password
+    <input type="password" id="confirmPassword" placeholder="Konfirmasi Password" required 
+      style="width:100%; padding:10px 12px; margin-top:6px; border-radius:6px; border:none; background:#222; color:#fff;" />
+  </label>
+
+  <label style="display:block; margin-bottom:8px;">
+    🔐 Kode Verifikasi
+    <div id="captcha" 
+      style="background:#333; padding:10px; margin:8px 0; font-size:1.8em; letter-spacing:20px; user-select:none; border-radius:6px; color:#eee; position:relative; font-weight:bold; filter: drop-shadow(0 0 1px #ffcc00);">
+      S    F
+      <canvas id="noise" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:6px;"></canvas>
+    </div>
+    <input type="text" id="captchaInput" placeholder="Verifikasi" required 
+      style="width:100%; padding:10px 12px; border-radius:6px; border:none; background:#222; color:#fff;" />
+  </label>
+
+  <button type="submit" 
+    style="width:100%; padding:12px; margin-top:15px; background:#ff5045; border:none; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer; font-size:1.1em;">
+    Daftar Sekarang
+  </button>
 </form>
 
 <script>
-  // Captcha value sesuai contoh gambar (S F)
+  // Draw noise on canvas for captcha background
+  const canvas = document.getElementById('noise');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  function resize(){
+    width = canvas.width = canvas.offsetWidth;
+    height = canvas.height = canvas.offsetHeight;
+  }
+  function noise(){
+    ctx.clearRect(0, 0, width, height);
+    for(let i=0; i<200; i++){
+      ctx.fillStyle = 'rgba(255,255,255,'+Math.random()*0.1+')';
+      ctx.fillRect(Math.random()*width, Math.random()*height, 1,1);
+    }
+  }
+  window.addEventListener('resize', () => { resize(); noise(); });
+  resize(); noise();
+
   const captchaText = 'SF';
 
   document.getElementById('registerForm').addEventListener('submit', function(e){
@@ -30,11 +73,13 @@
       return;
     }
 
-    // Contoh request ke backend register
     fetch('http://localhost:3000/register', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ username: user, password: pass })
+    }).then(res=>res.text()).then(msg=>alert(msg)).catch(()=>alert('Gagal koneksi ke server'));
+  });
+</script>      body: JSON.stringify({ username: user, password: pass })
     }).then(res => res.text()).then(msg => alert(msg)).catch(() => alert('Gagal koneksi ke server'));
   });
 </script>
