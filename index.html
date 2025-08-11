@@ -1,105 +1,435 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>SPI703 Clone</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; background: #121212; color: #fff; }
-    header { background: #1a1a1a; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-    header.logo { font-size: 1.8em; font-weight: bold; color: #ffcc00; }
-    nav a { color: #fff; margin: 0 15px; text-decoration: none; font-weight: bold; }
-    nav a:hover { color: #ffcc00; }.banner { background: url('') center/cover no-repeat; height: 300px; display: flex; justify-content: center; align-items: center; text-align: center; }.banner h1 { background: rgba(0,0,0,0.5); padding: 20px; font-size: 2.5em; color: #ffcc00; border-radius: 10px; }.menu { display: flex; justify-content: center; margin: 20px 0; }.menu button { background: #222; border: none; color: #fff; padding: 15px 25px; margin: 0 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s; }.menu button:hover { background: #ffcc00; color:#222; }.info { max-width: 800px; margin: 0 auto 40px; background: #1e1e1e; padding: 20px; border-radius: 10px; line-height: 1.5; }
-    form.login { max-width: 400px; margin: 0 auto; background: #1a1a1a; padding: 20px; border-radius: 10px; }
-    form.login input[type="text"], form.login input[type="password"] {
-      width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 6px;
-    }
-    form.login button {
-      width: 100%; padding: 12px; background: #ffcc00; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-    }.footer { background: #111; text-align: center; padding: 15px; margin-top: 40px; font-size: 0.9em; }.live-chat {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #ffcc00; color: #222; padding: 15px 20px; border-radius: 30px;
-      font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TVTOTO Slot Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #4a1c9e;
+            --secondary: #f7b219;
+            --accent: #e74c3c;
+            --dark: #1a1a2e;
+            --light: #f5f5f5;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .slot-machine {
+            background: linear-gradient(145deg, #2a2a40, #1e1e30);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            width: 95%;
+            max-width: 800px;
+            margin: 2rem auto;
+            border: 2px solid var(--secondary);
+        }
+
+        .reel {
+            width: 150px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            margin: 0 5px;
+            transition: transform 0.5s;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, 
+                                        rgba(255,255,255,0.1) 0%, 
+                                        rgba(255,255,255,0) 30%, 
+                                        rgba(255,255,255,0) 70%, 
+                                        rgba(255,255,255,0.1) 100%);
+            pointer-events: none;
+        }
+
+        .symbol {
+            transition: transform 0.1s;
+            user-select: none;
+        }
+
+        .spin-btn {
+            background: linear-gradient(to bottom, var(--secondary), #e67e22);
+            color: var(--dark);
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .spin-btn:active {
+            transform: translateY(1px);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            transform: none !important;
+        }
+
+        .win-animation {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .win-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .paytable {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        .paytable th {
+            background: var(--primary);
+            padding: 0.5rem;
+        }
+
+        .paytable td {
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .slot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .balance-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .balance-icon {
+            margin-right: 10px;
+            color: var(--secondary);
+        }
+
+        .bet-controls {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+            gap: 1rem;
+        }
+
+        .bet-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .bet-btn:hover {
+            background: var(--primary);
+        }
+
+        .bet-amount {
+            margin: 0 1rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .jackpot {
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: jackpotGlow 2s infinite;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        @keyframes jackpotGlow {
+            0% { color: gold; text-shadow: 0 0 10px gold; }
+            50% { color: var(--secondary); text-shadow: 0 0 20px var(--secondary); }
+            100% { color: gold; text-shadow: 0 0 10px gold; }
+        }
+
+        @media (max-width: 768px) {
+            .reel {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+            
+            .slot-machine {
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="slot-machine">
+        <div class="jackpot">
+            Jackpot: <span id="jackpotAmount">9,876,543</span> 🎰
+        </div>
 
-<header>
-  <div class="logo">SPI703</div>
-  <nav>
-    <a href="#">Home</a>
-    <a href="#">Togel</a>
-    <a href="#">Slot</a>
-    <a href="#">Live Casino</a>
-    <a href="#">Promo</a>
-    <a href="#">Daftar</a>
-  </nav>
-</header>
+        <div class="slot-header">
+            <div class="text-2xl font-bold text-yellow-300">TVTOTO SLOT</div>
+            <div class="balance-box">
+                <span class="balance-icon">💰</span>
+                Balance: $<span id="balance">1000</span>
+            </div>
+        </div>
 
-<div class="banner">
-  <h1>Promo Spesial Bonus 100% Untuk Member Baru!</h1>
-</div>
+        <div class="flex justify-center mb-8">
+            <div class="flex">
+                <div class="reel" id="reel1"></div>
+                <div class="reel" id="reel2"></div>
+                <div class="reel" id="reel3"></div>
+            </div>
+        </div>
 
-<div class="menu">
-  <button>Togel</button>
-  <button>Slot</button>
-  <button>Live Casino</button>
-  <button>Sportsbook</button>
-</div>
+        <div class="bet-controls">
+            <button class="bet-btn" id="betDown">-</button>
+            <div class="bet-amount">
+                Bet: <span id="currentBet">10</span>
+            </div>
+            <button class="bet-btn" id="betUp">+</button>
+        </div>
 
-<div class="info">
-  <h2>Info Penting</h2>
-  <p>Deposit minimal Rp 10.000, proses cepat dan mudah. Withdrawal tanpa potongan dan support 24/7.</p>
-</div>
+        <button class="spin-btn block mx-auto mt-6" id="spinButton">
+            SPIN
+        </button>
 
-<form class="login" onsubmit="return validateLogin()">
-  <h2>Login Member</h2>
-  <input type="text" id="username" placeholder="Username" required />
-  <input type="password" id="password" placeholder="Password" required />
-  <button type="submit">Login</button>
-</form>
+        <div class="paytable mt-8">
+            <h3 class="text-center text-xl font-bold mb-4">Paytable</h3>
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>3x</th>
+                        <th>2x</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🍒</td>
+                        <td>x5</td>
+                        <td>x2</td>
+                    </tr>
+                    <tr>
+                        <td>🍋</td>
+                        <td>x4</td>
+                        <td>x1.5</td>
+                    </tr>
+                    <tr>
+                        <td>🍊</td>
+                        <td>x3</td>
+                        <td>x1</td>
+                    </tr>
+                    <tr>
+                        <td>🍇</td>
+                        <td>x2</td>
+                        <td>x0.5</td>
+                    </tr>
+                    <tr>
+                        <td>🔔</td>
+                        <td>x10</td>
+                        <td>x5</td>
+                    </tr>
+                    <tr>
+                        <td>⭐</td>
+                        <td>x15</td>
+                        <td>x7</td>
+                    </tr>
+                    <tr>
+                        <td>7️⃣</td>
+                        <td>x20</td>
+                        <td>x10</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-<div class="live-chat" onclick="alert('Live chat belum tersedia, hubungi WhatsApp kami!')">
-  💬 Live Chat
-</div>
+    <div class="win-message" id="winMessage">
+        <h2 class="text-3xl font-bold text-yellow-300 mb-4">YOU WIN!</h2>
+        <p class="text-xl">You won: <span id="winAmount">0</span></p>
+        <button class="spin-btn mt-4" id="closeWinMessage">COLLECT</button>
+    </div>
 
-<div class="footer">© 2025 SPI703 - All Rights Reserved</div>
-
-<script>
-  function validateLogin() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    if(user === '' || pass === '') {
-      alert('Username dan password harus diisi!');
-      return false;
-    }
-    alert('Login sementara disabled, coba lagi nanti ya!');
-    return false;
-  }
-</script>
-
-</body>
-</html>
-<!-- Footer Navigasi Bawah -->
-<div style="position:fixed; bottom:0; left:0; right:0; background:#111; display:flex; justify-content:space-around; align-items:center; padding:8px 0; font-family:sans-serif; color:#fff; font-size:14px; z-index:1000;">
-  <div style="text-align:center; cursor:pointer;">
-    <div style="font-size:20px;">🏠</div>
-    <div>Beranda</div>
-  </div>
-  <div style="text-align:center; cursor:pointer;">
-    <div style="font-size:20px;">📢</div>
-    <div>Promosi</div>
-  </div>
-  <div style="text-align:center; cursor:pointer;">
-    <div style="font-size:20px;">🏆</div>
-    <div>Event</div>
-  </div>
-  <div style="text-align:center; cursor:pointer;" onclick="window.open('https://wa.me/6281213667251', '_blank')">
-    <div style="font-size:20px; color:#25D366;">💬</div>
-    <div>WhatsApp</div>
-  </div>
-  <div style="text-align:center; cursor:pointer;" onclick="alert('Fitur live chat sedang dalam pengembangan!')">
-    <div style="font-size:20px;">🗨️</div>
-    <div>LiveChat</div>
-  </div>
-</div>
+    <script>
+        // Game symbols
+        const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'];
+        
+        // Game state
+        let balance = 1000;
+        let currentBet = 10;
+        let isSpinning = false;
+        
+        // DOM elements
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const spinButton = document.getElementById('spinButton');
+        const balanceDisplay = document.getElementById('balance');
+        const currentBetDisplay = document.getElementById('currentBet');
+        const winMessage = document.getElementById('winMessage');
+        const winAmount = document.getElementById('winAmount');
+        const jackpotAmount = document.getElementById('jackpotAmount');
+        const betUp = document.getElementById('betUp');
+        const betDown = document.getElementById('betDown');
+        
+        // Initialize the reels
+        function initializeReels() {
+            reel1.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+            reel2.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+            reel3.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+        }
+        
+        // Get random symbol
+        function getRandomSymbol() {
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+        
+        // Spin the reels
+        function spin() {
+            if (isSpinning || balance < currentBet) return;
+            
+            isSpinning = true;
+            balance -= currentBet;
+            updateBalance();
+            spinButton.disabled = true;
+            
+            let spinCount = 0;
+            const totalSpins = 20 + Math.floor(Math.random() * 10);
+            
+            const spinInterval = setInterval(() => {
+                reel1.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+                
+                if (spinCount > 5) {
+                    reel2.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+                }
+                
+                if (spinCount > 10) {
+                    reel3.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+                }
+                
+                spinCount++;
+                
+                if (spinCount >= totalSpins) {
+                    clearInterval(spinInterval);
+                    finishSpin();
+                }
+            }, 100);
+        }
+        
+        // Finish spin and check for wins
+        function finishSpin() {
+            isSpinning = false;
+            spinButton.disabled = false;
+            
+            const symbol1 = reel1.textContent;
+            const symbol2 = reel2.textContent;
+            const symbol3 = reel3.textContent;
+            
+            // Check for wins
+            let winMultiplier = 0;
+            
+            // Jackpot - all 7s
+            if (symbol1 === '7️⃣' && symbol2 === '7️⃣' && symbol3 === '7️⃣') {
+                winMultiplier = 20;
+            } 
+            // Triple symbols
+            else if (symbol1 === symbol2 && symbol2 === symbol3) {
+                winMultiplier = getWinMultiplier(symbol1, true);
+            }
+            // Double symbols
+            else if (symbol1 === symbol2 || symbol1 === symbol3 || symbol2 === symbol3) {
+                const doubleSymbol = symbol1 === symbol2 ? symbol1 : symbol3;
+                winMultiplier = getWinMultiplier(doubleSymbol, false);
+            }
+            
+            if (winMultiplier > 0) {
+                const winAmountValue = currentBet * winMultiplier;
+                balance += winAmountValue;
+                updateBalance();
+                
+                // Add to jackpot (5% of win)
+                updateJackpot(Math.floor(winAmountValue * 0.05));
+                
+                showWinMessage(winAmountValue);
+            }
+        }
+        
+        // Get win multiplier based on symbol and if it's triple
+        function getWinMultiplier(symbol, isTriple) {
+            const paytable = {
+                '🍒': isTriple ? 5 : 2,
+                '🍋': isTriple ? 4 : 1.5,
+                '🍊': isTriple ? 3 : 1,
+                '🍇': isTriple ? 2 : 0.5,
+                '🔔': isTriple ? 10 : 5,
+                '⭐': isTriple ? 15 : 7,
+                '7️⃣': isTriple ? 20 : 10
+            };
+            
+            return paytable[symbol] || 0;
+        }
+        
+        // Show win message
+        function showWinMessage(amount) {
+            winAmount.textContent = amount;
+            winMessage.style.display = 'block';
+            
+            // Add win animation to reels
+            reel1.classList.add('win-animation');
+            reel2.classList
