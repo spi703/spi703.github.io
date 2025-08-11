@@ -1,257 +1,395 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot Online SPI703 - Live Demo</title>
+    <title>Game Slot Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
-        
-        :root {
-            --primary: #6d28d9;
-            --secondary: #fbbf24;
-            --dark: #1e1b4b;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--dark), #312e81);
-            color: white;
-            min-height: 100vh;
-        }
-        
-        .slot-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-        
-        .reel {
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 50px;
-            margin: 0 5px;
-            border: 2px solid var(--primary);
-            position: relative;
-            overflow: hidden;
-        }
-        
         @keyframes spin {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-1000px); }
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(720deg); }
         }
-        
-        .spin-btn {
-            background: linear-gradient(to right, var(--primary), #7c3aed);
-            transition: all 0.3s;
+        .slot-machine {
+            perspective: 1000px;
         }
-        
-        .spin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        .reel {
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-out;
         }
-        
-        .spin-btn:disabled {
-            opacity: 0.6;
+        .spin {
+            animation: spin 1.5s cubic-bezier(0.17, 0.89, 0.32, 1.28);
         }
-        
-        .win-animate {
-            animation: pulse 0.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .symbol {
+            backface-visibility: hidden;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="slot-container p-8 max-w-md w-full">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-center text-yellow-300">SPI703 SLOT</h1>
-            <div class="bg-indigo-900 px-4 py-2 rounded-lg">
-                <span class="text-yellow-300">💰</span>
-                <span id="balance">1000</span>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+        <div class="bg-gray-800 p-8 rounded-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center text-yellow-400">Login Akun</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-300 mb-2">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                </div>
+                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded font-bold transition">Login</button>
+            </form>
+            <p class="text-gray-400 text-sm mt-4 text-center">Belum punya akun? <span class="text-yellow-400 cursor-pointer" id="showRegister">Daftar disini</span></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-8 rounded-lg w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center text-yellow-400">Daftar Akun Baru</h2>
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-300 mb-2">Username</label>
+                    <input type="text" id="regUsername" class="w-full px-4 py-2 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">Password</label>
+                    <input type="password" id="regPassword" class="w-full px-4 py-2 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">Konfirmasi Password</label>
+                    <input type="password" id="regConfirmPassword" class="w-full px-4 py-2 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                </div>
+                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded font-bold transition">Daftar</button>
+            </form>
+            <p class="text-gray-400 text-sm mt-4 text-center">Sudah punya akun? <span class="text-yellow-400 cursor-pointer" id="showLogin">Login disini</span></p>
+        </div>
+    </div>
+
+    <!-- Main Game UI -->
+    <div id="gameUI" class="container mx-auto px-4 pt-8 hidden">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <img src="https://placehold.co/100x40/1f2937/ffffff?text=TVTOTO" alt="Logo TVTOTO dengan warna hitam dan teks putih" class="mr-4">
+                <h1 class="text-2xl font-bold text-yellow-400">Game Slot Online</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="bg-gray-800 px-4 py-2 rounded-lg">
+                    <span class="text-gray-300">Saldo:</span>
+                    <span id="balance" class="ml-2 font-bold text-yellow-400">Rp 1.000.000</span>
+                </div>
+                <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">Logout</button>
+            </div>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Game Area -->
+            <div class="flex-1">
+                <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <div class="slot-machine flex justify-center items-center mb-8">
+                        <div class="flex">
+                            <div class="reel mx-2 w-24 h-32 relative" id="reel1">
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">7</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🍒</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">💰</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🍋</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🔔</div>
+                            </div>
+                            <div class="reel mx-2 w-24 h-32 relative" id="reel2">
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">7</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🍒</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">💰</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🍋</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🔔</div>
+                            </div>
+                            <div class="reel mx-2 w-24 h-32 relative" id="reel3">
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">7</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🍒</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">💰</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🍋</div>
+                                <div class="symbol absolute w-full h-full flex items-center justify-center bg-gray-700 rounded-lg text-4xl font-bold">🔔</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-6">
+                        <div class="text-xl mb-4">
+                            <span class="text-gray-300">Taruhan:</span>
+                            <span id="betAmount" class="ml-2 font-bold text-yellow-400">Rp 10.000</span>
+                        </div>
+                        <div class="flex justify-center space-x-4 mb-4">
+                            <button id="decreaseBet" class="bg-gray-700 hover:bg-gray-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold">-</button>
+                            <button id="spinBtn" class="bg-yellow-600 hover:bg-yellow-700 w-24 h-24 rounded-full flex items-center justify-center text-xl font-bold animate-pulse">SPIN</button>
+                            <button id="increaseBet" class="bg-gray-700 hover:bg-gray-600 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold">+</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-bold mb-2 text-yellow-400">Panduan Pembayaran:</h3>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between"><span>777</span> <span>50x Taruhan</span></li>
+                            <li class="flex justify-between"><span>🍒🍒🍒</span> <span>20x Taruhan</span></li>
+                            <li class="flex justify-between"><span>💰💰💰</span> <span>15x Taruhan</span></li>
+                            <li class="flex justify-between"><span>🔔🔔🔔</span> <span>10x Taruhan</span></li>
+                            <li class="flex justify-between"><span>🍋🍋🍋</span> <span>5x Taruhan</span></li>
+                            <li class="flex justify-between"><span>7-7-x</span> <span>2x Taruhan</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info & History -->
+            <div class="lg:w-80">
+                <div class="bg-gray-800 rounded-xl p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4 text-yellow-400">Informasi Akun</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-gray-400">Username:</p>
+                            <p id="displayUsername" class="font-medium">user123</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">Member Sejak:</p>
+                            <p>01 Jan 2023</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">Total Kemenangan:</p>
+                            <p class="text-green-400">Rp 5.250.000</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">Total Taruhan:</p>
+                            <p>Rp 3.500.000</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 rounded-xl p-6">
+                    <h2 class="text-xl font-bold mb-4 text-yellow-400">Riwayat Terakhir</h2>
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        <div class="bg-gray-700 p-3 rounded">
+                            <div class="flex justify-between">
+                                <span>🔔🍒💰</span>
+                                <span class="text-red-400">-10.000</span>
+                            </div>
+                            <div class="text-sm text-gray-400">2 menit lalu</div>
+                        </div>
+                        <div class="bg-gray-700 p-3 rounded">
+                            <div class="flex justify-between">
+                                <span>🍋🍋🍋</span>
+                                <span class="text-green-400">+50.000</span>
+                            </div>
+                            <div class="text-sm text-gray-400">10 menit lalu</div>
+                        </div>
+                        <div class="bg-gray-700 p-3 rounded">
+                            <div class="flex justify-between">
+                                <span>7-7-🍒</span>
+                                <span class="text-green-400">+20.000</span>
+                            </div>
+                            <div class="text-sm text-gray-400">30 menit lalu</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="flex justify-center mb-8">
-            <div id="reel1" class="reel">🍒</div>
-            <div id="reel2" class="reel">🍋</div>
-            <div id="reel3" class="reel">🍊</div>
-        </div>
-        
-        <div class="flex justify-between items-center mb-6">
-            <div class="bg-indigo-900 px-4 py-2 rounded-lg">
-                Bet: <span id="current-bet">10</span>
-                <button id="bet-down" class="ml-2 px-2 bg-indigo-700 rounded">-</button>
-                <button id="bet-up" class="ml-1 px-2 bg-indigo-700 rounded">+</button>
-            </div>
-        </div>
-        
-        <button id="spin-btn" class="spin-btn w-full py-3 rounded-lg font-bold text-lg">
-            SPIN
-        </button>
-        
-        <div id="result" class="text-center mt-4 h-6 text-yellow-300 font-bold"></div>
     </div>
 
     <script>
-        // Game configuration
-        const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'];
-        const paytable = {
-            '🍒': { '3': 5, '2': 2 },
-            '🍋': { '3': 4, '2': 1.5 },
-            '🍊': { '3': 3, '2': 1 },
-            '🍇': { '3': 2, '2': 0.5 },
-            '🔔': { '3': 10, '2': 5 },
-            '⭐': { '3': 15, '2': 7 },
-            '7️⃣': { '3': 20, '2': 10 }
-        };
+        // Inisialisasi variabel
+        let balance = 1000000;
+        let betAmount = 10000;
+        let isSpinning = false;
+        let currentUser = null;
         
-        // Game state
-        let balance = 1000;
-        let currentBet = 10;
-        let spinning = false;
-        
-        // DOM elements
+        // Simpan data user sementara
+        const users = [
+            { username: 'user1', password: 'user1', balance: 500000 },
+            { username: 'user2', password: 'user2', balance: 750000 }
+        ];
+
+        // DOM Elements
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const gameUI = document.getElementById('gameUI');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const spinBtn = document.getElementById('spinBtn');
+        const decreaseBet = document.getElementById('decreaseBet');
+        const increaseBet = document.getElementById('increaseBet');
+        const betAmountDisplay = document.getElementById('betAmount');
         const balanceDisplay = document.getElementById('balance');
-        const currentBetDisplay = document.getElementById('current-bet');
-        const spinBtn = document.getElementById('spin-btn');
-        const betUp = document.getElementById('bet-up');
-        const betDown = document.getElementById('bet-down');
-        const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
-        const resultDisplay = document.getElementById('result');
+        const displayUsername = document.getElementById('displayUsername');
         
-        // Initialize the game
-        function init() {
-            updateUI();
+        const reels = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+
+        const symbols = ['7', '🍒', '💰', '🍋', '🔔'];
+
+        // Event Listeners
+        loginForm.addEventListener('submit', handleLogin);
+        registerForm.addEventListener('submit', handleRegister);
+        showRegister.addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+            registerModal.classList.remove('hidden');
+        });
+        showLogin.addEventListener('click', () => {
+            registerModal.classList.add('hidden');
+            loginModal.classList.remove('hidden');
+        });
+        logoutBtn.addEventListener('click', logout);
+        spinBtn.addEventListener('click', spin);
+        decreaseBet.addEventListener('click', () => adjustBet(-5000));
+        increaseBet.addEventListener('click', () => adjustBet(5000));
+
+        // Fungsi untuk login
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
             
-            // Event listeners
-            spinBtn.addEventListener('click', handleSpin);
-            betUp.addEventListener('click', () => {
-                currentBet = Math.min(currentBet + 10, 100);
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                balance = user.balance;
                 updateUI();
-            });
-            betDown.addEventListener('click', () => {
-                currentBet = Math.max(currentBet - 10, 10);
-                updateUI();
-            });
+                loginModal.classList.add('hidden');
+                gameUI.classList.remove('hidden');
+            } else {
+                alert('Username atau password salah!');
+            }
         }
-        
-        // Update UI
-        function updateUI() {
-            balanceDisplay.textContent = balance;
-            currentBetDisplay.textContent = currentBet;
-            spinBtn.disabled = balance < currentBet || spinning;
-        }
-        
-        // Handle spin
-        function handleSpin() {
-            if (spinning) return;
+
+        // Fungsi untuk registrasi
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
             
-            spinning = true;
-            balance -= currentBet;
-            updateUI();
-            
-            resultDisplay.textContent = "";
-            
-            // Spin reels
-            const spins = [];
-            for (let i = 0; i < 3; i++) {
-                spins.push(spinReel(reels[i]));
+            if (password !== confirmPassword) {
+                alert('Konfirmasi password tidak cocok!');
+                return;
             }
             
-            // After spinning, check result
+            if (users.some(u => u.username === username)) {
+                alert('Username sudah digunakan!');
+                return;
+            }
+            
+            const newUser = {
+                username,
+                password,
+                balance: 50000 // Saldo awal untuk user baru
+            };
+            
+            users.push(newUser);
+            alert('Pendaftaran berhasil! Silakan login.');
+            registerModal.classList.add('hidden');
+            loginModal.classList.remove('hidden');
+        }
+
+        // Fungsi untuk logout
+        function logout() {
+            // Simpan saldo terakhir
+            if (currentUser) {
+                currentUser.balance = balance;
+            }
+            
+            currentUser = null;
+            gameUI.classList.add('hidden');
+            loginModal.classList.remove('hidden');
+            
+            // Reset form login
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Fungsi untuk update UI
+        function updateUI() {
+            if (currentUser) {
+                balanceDisplay.textContent = `Rp ${balance.toLocaleString('id-ID')}`;
+                betAmountDisplay.textContent = `Rp ${betAmount.toLocaleString('id-ID')}`;
+                displayUsername.textContent = currentUser.username;
+            }
+        }
+
+        // Fungsi untuk mengatur taruhan
+        function adjustBet(amount) {
+            const newBet = betAmount + amount;
+            if (newBet >= 5000 && newBet <= balance) {
+                betAmount = newBet;
+                updateUI();
+            }
+        }
+
+        // Fungsi untuk memutar slot
+        function spin() {
+            if (isSpinning || betAmount > balance) return;
+            
+            isSpinning = true;
+            balance -= betAmount;
+            updateUI();
+            
+            // Animasi putaran
+            reels.forEach(reel => {
+                reel.classList.add('spin');
+                // Posisi symbol acak setelah animasi selesai
+                setTimeout(() => {
+                    reel.style.transform = `rotateX(${Math.floor(Math.random() * 5) * 72}deg)`;
+                    reel.classList.remove('spin');
+                }, 1500);
+            });
+            
+            // Cek hasil setelah animasi selesai
             setTimeout(() => {
-                Promise.all(spins).then((values) => {
-                    spinning = false;
-                    updateUI();
-                    
-                    // Check for win
-                    checkResult(values);
-                });
+                checkResult();
+                isSpinning = false;
             }, 2000);
         }
-        
-        // Spin single reel
-        function spinReel(reel) {
-            return new Promise((resolve) => {
-                reel.style.animation = 'spin 0.1s linear infinite';
-                
-                setTimeout(() => {
-                    clearInterval(interval);
-                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-                    reel.textContent = randomSymbol;
-                    reel.style.animation = '';
-                    
-                    resolve(randomSymbol);
-                }, 2000);
-            });
-        }
-        
-        // Check result
-        function checkResult(result) {
-            const [r1, r2, r3] = result;
-            let win = 0;
+
+        // Fungsi untuk mengecek hasil putaran
+        function checkResult() {
+            // Simulasikan hasil acak (real program akan membaca posisi reel)
+            const results = [
+                symbols[Math.floor(Math.random() * symbols.length)],
+                symbols[Math.floor(Math.random() * symbols.length)],
+                symbols[Math.floor(Math.random() * symbols.length)]
+            ];
             
-            // Check for all same
-            if (r1 === r2 && r2 === r3) {
-                win = currentBet * paytable[r1]['3'];
-            } 
-            // Check for any two same
-            else if (r1 === r2 || r1 === r3 || r2 === r3) {
-                const symbol = r1 === r2 ? r1 : r3;
-                win = currentBet * paytable[symbol]['2'];
+            let winAmount = 0;
+            
+            // Logika kemenangan (sederhana)
+            if (results[0] === '7' && results[1] === '7' && results[2] === '7') {
+                winAmount = betAmount * 50;
+            } else if (results[0] === '🍒' && results[1] === '🍒' && results[2] === '🍒') {
+                winAmount = betAmount * 20;
+            } else if (results[0] === '💰' && results[1] === '💰' && results[2] === '💰') {
+                winAmount = betAmount * 15;
+            } else if (results[0] === '🔔' && results[1] === '🔔' && results[2] === '🔔') {
+                winAmount = betAmount * 10;
+            } else if (results[0] === '🍋' && results[1] === '🍋' && results[2] === '🍋') {
+                winAmount = betAmount * 5;
+            } else if (results[0] === '7' && results[1] === '7' && results[2] !== '7') {
+                winAmount = betAmount * 2;
             }
             
-            if (win > 0) {
-                balance += win;
+            if (winAmount > 0) {
+                balance += winAmount;
                 updateUI();
-                
-                // Show win animation
-                reels.forEach(reel => {
-                    reel.classList.add('win-animate');
-                    setTimeout(() => reel.classList.remove('win-animate'), 1500);
-                });
-                
-                resultDisplay.textContent = `You win ${win}!`;
-            } else {
-                resultDisplay.textContent = "Try again!";
+                alert(`Anda menang Rp ${winAmount.toLocaleString('id-ID')}!`);
             }
-            
-            // Simulate online connection
-            simulateOnlineUpdate();
         }
-        
-        // Simulate online connection - in a real app you'd use WebSockets
-        function simulateOnlineUpdate() {
-            // Fake jackpot update
-            const jackpotUpdate = Math.floor(Math.random() * 500) + 100;
-            setTimeout(() => {
-                resultDisplay.textContent = `Jackpot increased by ${jackpotUpdate}!`;
-            }, 3000);
-            
-            // Fake recent winners
-            setTimeout(() => {
-                const fakeNames = ['Player1', 'Lucky777', 'Winner123', 'JackpotKing'];
-                const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-                const fakeWin = Math.floor(Math.random() * 1000) + 200;
-                resultDisplay.textContent = `${randomName} just won ${fakeWin}!`;
-            }, 5000);
-        }
-        
-        // Initialize
-        init();
+
+        // Inisialisasi UI
+        updateUI();
     </script>
 </body>
 </html>
