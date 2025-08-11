@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPI703 Slot Game</title>
+    <title>SPI703 Slot Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -120,6 +120,22 @@
             text-align: center;
             z-index: 100;
             display: none;
+            animation: winFadeIn 0.5s;
+            border: 2px solid var(--secondary);
+        }
+
+        @keyframes winFadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .jackpot-win {
+            animation: jackpotPulse 0.5s infinite alternate;
+        }
+
+        @keyframes jackpotPulse {
+            from { box-shadow: 0 0 20px gold; }
+            to { box-shadow: 0 0 40px var(--secondary); }
         }
 
         .paytable {
@@ -152,11 +168,6 @@
             border-radius: 5px;
             display: flex;
             align-items: center;
-        }
-
-        .balance-icon {
-            margin-right: 10px;
-            color: var(--secondary);
         }
 
         .bet-controls {
@@ -194,12 +205,32 @@
             animation: jackpotGlow 2s infinite;
             text-transform: uppercase;
             letter-spacing: 2px;
+            font-size: 1.2rem;
         }
 
         @keyframes jackpotGlow {
             0% { color: gold; text-shadow: 0 0 10px gold; }
             50% { color: var(--secondary); text-shadow: 0 0 20px var(--secondary); }
             100% { color: gold; text-shadow: 0 0 10px gold; }
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .history-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .win-history {
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         @media (max-width: 768px) {
@@ -212,17 +243,25 @@
             .slot-machine {
                 padding: 1rem;
             }
+            
+            .logo {
+                font-size: 1.4rem;
+            }
+            
+            .jackpot {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="slot-machine">
         <div class="jackpot">
-            Jackpot: <span id="jackpotAmount">9,876,543</span> 🎰
+            🏆 JACKPOT: $<span id="jackpotAmount">9,876,543</span> 🏆
         </div>
 
         <div class="slot-header">
-            <div class="text-2xl font-bold text-yellow-300">SPI703 SLOT</div>
+            <div class="logo">SPI703 SLOTS</div>
             <div class="balance-box">
                 <span class="balance-icon">💰</span>
                 Balance: $<span id="balance">1000</span>
@@ -240,7 +279,7 @@
         <div class="bet-controls">
             <button class="bet-btn" id="betDown">-</button>
             <div class="bet-amount">
-                Bet: <span id="currentBet">10</span>
+                Bet: $<span id="currentBet">10</span>
             </div>
             <button class="bet-btn" id="betUp">+</button>
         </div>
@@ -255,8 +294,8 @@
                 <thead>
                     <tr>
                         <th>Symbol</th>
-                        <th>3x</th>
-                        <th>2x</th>
+                        <th>3x Pay</th>
+                        <th>2x Pay</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -297,23 +336,49 @@
                     </tr>
                 </tbody>
             </table>
+            
+            <div class="mt-4 text-center text-sm">
+                <p>Wild: 7️⃣ = Automatic Win (Highest Payout)</p>
+            </div>
+        </div>
+
+        <div class="win-history mt-6">
+            <h4 class="text-center font-bold mb-2">Last Wins</h4>
+            <div id="historyList" class="text-center">
+                <!-- Wins will be added here -->
+            </div>
         </div>
     </div>
 
     <div class="win-message" id="winMessage">
-        <h2 class="text-3xl font-bold text-yellow-300 mb-4">YOU WIN!</h2>
-        <p class="text-xl">You won: <span id="winAmount">0</span></p>
+        <h2 class="text-3xl font-bold text-yellow-300 mb-4" id="winTitle">YOU WIN!</h2>
+        <p class="text-xl mb-2">💰 <span id="winAmount">0</span> 💰</p>
+        <p id="winCombination" class="text-lg mb-4"></p>
+        <p class="text-sm text-yellow-300" id="jackpotNotice" style="display: none;">
+            🎉 Congrats! You hit the JACKPOT! 🎉
+        </p>
         <button class="spin-btn mt-4" id="closeWinMessage">COLLECT</button>
     </div>
 
     <script>
-        // Game symbols
+        // Game configuration
         const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'];
+        const paytable = {
+            '🍒': { triple: 5, double: 2 },
+            '🍋': { triple: 4, double: 1.5 },
+            '🍊': { triple: 3, double: 1 },
+            '🍇': { triple: 2, double: 0.5 },
+            '🔔': { triple: 10, double: 5 },
+            '⭐': { triple: 15, double: 7 },
+            '7️⃣': { triple: 20, double: 10 }
+        };
         
         // Game state
         let balance = 1000;
         let currentBet = 10;
         let isSpinning = false;
+        let jackpot = 9876543;
+        let winHistory = [];
         
         // DOM elements
         const reel1 = document.getElementById('reel1');
@@ -324,25 +389,61 @@
         const currentBetDisplay = document.getElementById('currentBet');
         const winMessage = document.getElementById('winMessage');
         const winAmount = document.getElementById('winAmount');
+        const winTitle = document.getElementById('winTitle');
+        const winCombination = document.getElementById('winCombination');
+        const jackpotNotice = document.getElementById('jackpotNotice');
         const jackpotAmount = document.getElementById('jackpotAmount');
+        const historyList = document.getElementById('historyList');
         const betUp = document.getElementById('betUp');
         const betDown = document.getElementById('betDown');
+        const closeWinMessage = document.getElementById('closeWinMessage');
         
-        // Initialize the reels
+        // Initialize the game
+        function initGame() {
+            updateBalance();
+            updateJackpotDisplay();
+            initializeReels();
+            setupEventListeners();
+        }
+        
         function initializeReels() {
             reel1.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
             reel2.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
             reel3.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
         }
         
-        // Get random symbol
         function getRandomSymbol() {
             return symbols[Math.floor(Math.random() * symbols.length)];
         }
         
-        // Spin the reels
+        function setupEventListeners() {
+            spinButton.addEventListener('click', spin);
+            
+            betUp.addEventListener('click', () => {
+                currentBet = Math.min(500, currentBet + 10);
+                updateBetDisplay();
+            });
+            
+            betDown.addEventListener('click', () => {
+                currentBet = Math.max(10, currentBet - 10);
+                updateBetDisplay();
+            });
+            
+            closeWinMessage.addEventListener('click', () => {
+                winMessage.style.display = 'none';
+                reel1.classList.remove('win-animation', 'jackpot-win');
+                reel2.classList.remove('win-animation', 'jackpot-win');
+                reel3.classList.remove('win-animation', 'jackpot-win');
+            });
+        }
+        
         function spin() {
-            if (isSpinning || balance < currentBet) return;
+            if (isSpinning || balance < currentBet) {
+                if (balance < currentBet) {
+                    alert('Not enough balance!');
+                }
+                return;
+            }
             
             isSpinning = true;
             balance -= currentBet;
@@ -351,15 +452,18 @@
             
             let spinCount = 0;
             const totalSpins = 20 + Math.floor(Math.random() * 10);
+            const reelSpinDelays = [0, 5, 10]; // Reels stop sequentially
             
             const spinInterval = setInterval(() => {
-                reel1.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+                if (spinCount <= reelSpinDelays[0]) {
+                    reel1.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
+                }
                 
-                if (spinCount > 5) {
+                if (spinCount > reelSpinDelays[1]) {
                     reel2.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
                 }
                 
-                if (spinCount > 10) {
+                if (spinCount > reelSpinDelays[2]) {
                     reel3.innerHTML = `<div class="symbol">${getRandomSymbol()}</div>`;
                 }
                 
@@ -372,30 +476,34 @@
             }, 100);
         }
         
-        // Finish spin and check for wins
         function finishSpin() {
             isSpinning = false;
             spinButton.disabled = false;
             
-            const symbol1 = reel1.textContent;
-            const symbol2 = reel2.textContent;
-            const symbol3 = reel3.textContent;
+            const symbol1 = reel1.textContent.trim();
+            const symbol2 = reel2.textContent.trim();
+            const symbol3 = reel3.textContent.trim();
             
-            // Check for wins
             let winMultiplier = 0;
+            let winType = '';
+            let isJackpot = false;
             
-            // Jackpot - all 7s
+            // Check for jackpot (all 7s)
             if (symbol1 === '7️⃣' && symbol2 === '7️⃣' && symbol3 === '7️⃣') {
-                winMultiplier = 20;
+                winMultiplier = paytable['7️⃣'].triple;
+                winType = 'JACKPOT';
+                isJackpot = true;
             } 
             // Triple symbols
             else if (symbol1 === symbol2 && symbol2 === symbol3) {
-                winMultiplier = getWinMultiplier(symbol1, true);
+                winMultiplier = paytable[symbol1].triple;
+                winType = 'TRIPLE';
             }
-            // Double symbols
+            // Double symbols (any two matching)
             else if (symbol1 === symbol2 || symbol1 === symbol3 || symbol2 === symbol3) {
-                const doubleSymbol = symbol1 === symbol2 ? symbol1 : symbol3;
-                winMultiplier = getWinMultiplier(doubleSymbol, false);
+                const matchedSymbol = symbol1 === symbol2 ? symbol1 : symbol3;
+                winMultiplier = paytable[matchedSymbol].double;
+                winType = 'DOUBLE';
             }
             
             if (winMultiplier > 0) {
@@ -403,33 +511,106 @@
                 balance += winAmountValue;
                 updateBalance();
                 
-                // Add to jackpot (5% of win)
-                updateJackpot(Math.floor(winAmountValue * 0.05));
+                // Add to win history
+                addToHistory(winAmountValue, winType, [symbol1, symbol2, symbol3], isJackpot);
                 
-                showWinMessage(winAmountValue);
+                if (isJackpot) {
+                    // Award jackpot
+                    winAmountValue += jackpot;
+                    jackpot = 1000000; // Reset to minimum
+                    
+                    // Visual effects for jackpot
+                    reel1.classList.add('jackpot-win');
+                    reel2.classList.add('jackpot-win');
+                    reel3.classList.add('jackpot-win');
+                    
+                    winTitle.textContent = 'JACKPOT!';
+                    jackpotNotice.style.display = 'block';
+                } else {
+                    winTitle.textContent = 'YOU WIN!';
+                    jackpotNotice.style.display = 'none';
+                    
+                    reel1.classList.add('win-animation');
+                    reel2.classList.add('win-animation');
+                    reel3.classList.add('win-animation');
+                }
+                
+                // Add jackpot contribution (5% of base win)
+                if (!isJackpot) {
+                    const jackpotContribution = Math.floor(winAmountValue * 0.05);
+                    updateJackpot(jackpotContribution);
+                }
+                
+                winAmount.textContent = winAmountValue.toLocaleString();
+                winCombination.textContent = `${symbol1} ${symbol2} ${symbol3}`;
+                winMessage.style.display = 'block';
             }
         }
         
-        // Get win multiplier based on symbol and if it's triple
-        function getWinMultiplier(symbol, isTriple) {
-            const paytable = {
-                '🍒': isTriple ? 5 : 2,
-                '🍋': isTriple ? 4 : 1.5,
-                '🍊': isTriple ? 3 : 1,
-                '🍇': isTriple ? 2 : 0.5,
-                '🔔': isTriple ? 10 : 5,
-                '⭐': isTriple ? 15 : 7,
-                '7️⃣': isTriple ? 20 : 10
-            };
-            
-            return paytable[symbol] || 0;
+        function updateBalance() {
+            balanceDisplay.textContent = balance.toLocaleString();
         }
         
-        // Show win message
-        function showWinMessage(amount) {
-            winAmount.textContent = amount;
-            winMessage.style.display = 'block';
+        function updateBetDisplay() {
+            currentBetDisplay.textContent = currentBet;
+        }
+        
+        function updateJackpot(amount = 0) {
+            jackpot += amount;
+            updateJackpotDisplay();
+        }
+        
+        function updateJackpotDisplay() {
+            jackpotAmount.textContent = jackpot.toLocaleString();
+        }
+        
+        function addToHistory(amount, type, symbols, isJackpot = false) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
             
-            // Add win animation to reels
-            reel1.classList.add('win-animation');
-            reel2.classList
+            const historyItem = {
+                amount,
+                type,
+                symbols,
+                time: timeString,
+                isJackpot
+            };
+            
+            winHistory.unshift(historyItem);
+            if (winHistory.length > 10) {
+                winHistory.pop();
+            }
+            
+            renderHistory();
+        }
+        
+        function renderHistory() {
+            historyList.innerHTML = '';
+            
+            winHistory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                
+                const symbolDisplay = item.symbols.join(' ');
+                const winType = item.isJackpot ? 'JACKPOT' : item.type;
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span>${symbolDisplay}</span>
+                        <span class="text-yellow-300">$${item.amount.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span>${winType}</span>
+                        <span>${item.time}</span>
+                    </div>
+                `;
+                
+                historyList.appendChild(div);
+            });
+        }
+        
+        // Initialize the game
+        window.onload = initGame;
+    </script>
+</body>
+</html>
