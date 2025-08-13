@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Play, Star, Heart, Trophy, Zap } from 'lucide-react';
+import { Play, Star, Heart, Trophy, Zap, Flame } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
 const GameCard = ({ game, featured = false }) => {
